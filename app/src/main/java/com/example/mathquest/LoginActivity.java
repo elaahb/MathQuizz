@@ -12,6 +12,8 @@ import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 public class LoginActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
@@ -56,6 +58,28 @@ public class LoginActivity extends AppCompatActivity {
             }
 
 
+            FirebaseUser firebaseUser = mAuth.getCurrentUser();
+            if (firebaseUser != null) {
+                String userId = firebaseUser.getUid(); // UID unique de Firebase
+
+                // Crée un objet User avec l'UID
+                User currentUser = new User(firebaseUser.getEmail(), "NomUtilisateur", "", userId);
+
+                // Référence à la DB
+                DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference("Users");
+
+                // Stocker l'utilisateur avec son UID comme clé
+                dbRef.child(userId).setValue(currentUser)
+                        .addOnCompleteListener(dbTask -> {
+                            if (dbTask.isSuccessful()) {
+                                Toast.makeText(LoginActivity.this, "Connexion réussie !", Toast.LENGTH_SHORT).show();
+                                startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                                finish();
+                            } else {
+                                Toast.makeText(LoginActivity.this, "Erreur DB : " + dbTask.getException().getMessage(), Toast.LENGTH_LONG).show();
+                            }
+                        });
+            }
 
             progressDialog.show();
             mAuth.signInWithEmailAndPassword(emailInput, passwordInput)

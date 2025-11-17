@@ -109,11 +109,11 @@ public class LevelSelectionActivity extends AppCompatActivity {
 
         // Set card color based on state with pastel colors
         if (isCompleted) {
-            card.setCardBackgroundColor(Color.parseColor("#A5D6A7")); // Pastel green for completed
+            card.setCardBackgroundColor(Color.parseColor("#A5D6A7"));
         } else if (isUnlocked) {
-            card.setCardBackgroundColor(Color.parseColor("#B3D9FF")); // Pastel blue for unlocked
+            card.setCardBackgroundColor(Color.parseColor("#B3D9FF"));
         } else {
-            card.setCardBackgroundColor(Color.parseColor("#E0E0E0")); // Light gray for locked
+            card.setCardBackgroundColor(Color.parseColor("#E0E0E0"));
         }
 
         TextView levelText = new TextView(this);

@@ -12,6 +12,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.Random;
 
@@ -259,6 +263,41 @@ public class GameActivity extends AppCompatActivity {
         editor.putInt(level + "_level_" + miniLevel + "_score", score);
         
         editor.apply();
+    }
+    private void updateProgressInFirebase(int score) {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) return;
+
+        String uid = user.getUid();
+        String levelKey = getIntent().getStringExtra("level"); // "facile", "moyen", "difficile"
+        int miniLevel = getIntent().getIntExtra("miniLevel", 1); // 1,2,3…
+
+        DatabaseReference userRef = FirebaseDatabase.getInstance()
+                .getReference("Users")
+                .child(uid)
+                .child("progress")
+                .child(levelKey);
+
+        // 1️⃣ Marquer le mini-niveau comme completed
+        userRef.child("miniLevels")
+                .child("level_" + miniLevel)
+                .child("completed")
+                .setValue(true);
+
+        // 2️⃣ Mettre à jour le score
+        userRef.child("miniLevels")
+                .child("level_" + miniLevel)
+                .child("score")
+                .setValue(score);
+
+        // 3️⃣ Débloquer le prochain level si nécessaire
+        userRef.child("lastUnlocked").get().addOnSuccessListener(snapshot -> {
+            int lastUnlocked = snapshot.getValue(Integer.class);
+
+            if (miniLevel == lastUnlocked) {
+                userRef.child("lastUnlocked").setValue(lastUnlocked + 1);
+            }
+        });
     }
 
     private void startTimer() {
